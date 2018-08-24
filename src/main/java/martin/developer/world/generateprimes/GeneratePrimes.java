@@ -10,54 +10,52 @@ package martin.developer.world.generateprimes;
  * <p>
  * The algorithm is quite simple. Given an array of integers starting at 2.
  * Cross out all multiples of 2. Find the next uncrossed integer, and cross out
- * all of its multiples. Repeat untilyou have passed the square root of the
+ * all of its multiples. Repeat until you have passed the square root of the
  * maximum value.
  * 
  * @author Alphonse
  * @version 13 Feb 2002 atp
  */
 
-public class GeneratePrimes {
+public class PrimesGenerator {
 	/**
 	 * @param maxValue
 	 *            is the generation limit.
 	 */
-	public static int[] generatePrimes(int maxValue) {
-		if (maxValue >= 2) // the only valid case
-		{
-			// declarations
-			int s = maxValue + 1; // size of array
-			boolean[] f = new boolean[s];
-			int i;
-			// initialize array to true.
-			for (i = 0; i < s; i++)
-				f[i] = true;
-			// get rid of known non-primes
-			f[0] = f[1] = false;
-			// sieve
-			int j;
-			for (i = 2; i < Math.sqrt(s) + 1; i++) {
-				if (f[i]) // if i is uncrossed, cross its multiples.
-				{
-					for (j = 2 * i; j < s; j += i)
-						f[j] = false; // multiple is not prime
-				}
-			}
-			// how many primes are there?
-			int count = 0;
-			for (i = 0; i < s; i++) {
-				if (f[i])
-					count++; // bump count.
-			}
-			int[] primes = new int[count];
-			// move the primes into the result
-			for (i = 0, j = 0; i < s; i++) {
-				if (f[i]) // if prime
-					primes[j++] = i;
-			}
-			return primes; // return the primes
-		} else
-			// maxValue < 2
+	public int[] generate(int maxValue) {
+		if (maxValue < 2)
 			return new int[0]; // return null array if bad input.
+		
+		int sieveLength = maxValue + 1;
+		boolean[] isCrossedOut = new boolean[sieveLength];
+				
+		// get rid of known non-primes
+		isCrossedOut[0] = isCrossedOut[1] = true;
+		
+		// sieve
+		int limit = Math.sqrt(sieveLength) + 1;
+		for (int i = 2; i < limit; i++) {
+			isCrossedOut = crossOutPrimeMultiples(i, isCrossedOut);
+		}
+				
+		int[] primes = Arrays.stream(isCrossedOut)
+			.filter(x -> !x)
+			.toArray();
+		
+		return primes;
+	}
+	
+	private boolean[] crossOutPrimeMultiples(int n, boolean[] isCrossedOut) {
+		if (isCrossedOut[n]) {
+			// not a prime. don't do anything
+			return isCrossedOut;
+		}
+		
+		int multiple = n * 2;
+		while (multiple < isCrossedOut.length) {
+			isCrossedOut[multiple] = true; 
+			multiple += n;
+		}
+		return isCrossedOut;
 	}
 }
